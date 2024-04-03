@@ -16,6 +16,10 @@ let package = Package(
         .library(
             name: "FirebaseWrapperRemoteConfig", 
             targets: ["FirebaseWrapperRemoteConfig"]
+        ),
+        .library(
+            name: "FirebaseWrapperAuth",
+            targets: ["FirebaseWrapperAuth"]
         )
     ],
     dependencies: [
@@ -34,6 +38,13 @@ let package = Package(
             name: "FirebaseWrapperRemoteConfig",
             dependencies: [
                 .product(name: "FirebaseRemoteConfig", package: "firebase-ios-sdk"),
+                .target(name: "FirebaseWrapper")
+            ]
+        ),
+        .target(
+            name: "FirebaseWrapperAuth",
+            dependencies: [
+                .product(name: "FirebaseAuth", package: "firebase-ios-sdk"),
                 .target(name: "FirebaseWrapper")
             ]
         )

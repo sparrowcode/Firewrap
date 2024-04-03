@@ -1,10 +1,10 @@
 import Foundation
 import FirebaseCore
-// import SwiftBoost
+import SwiftBoost
 
 open class FirebaseWrapper {
     
-    public static func configure() {
-        FirebaseApp.configure()
+    public static func configure(with options: FirebaseOptions) {
+        FirebaseApp.configure(options: options)
     }
 }
