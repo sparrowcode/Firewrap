@@ -24,6 +24,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/firebase/firebase-ios-sdk", .upToNextMajor(from: "10.23.0")),
+        .package(url: "https://github.com/google/GoogleSignIn-iOS", .upToNextMajor(from: "7.1.0")),
         .package(url: "https://github.com/sparrowcode/SwiftBoost", .upToNextMajor(from: "4.0.9")),
     ],
     targets: [
@@ -45,6 +46,7 @@ let package = Package(
             name: "FirebaseWrapperAuth",
             dependencies: [
                 .product(name: "FirebaseAuth", package: "firebase-ios-sdk"),
+                .product(name: "GoogleSignIn", package: "GoogleSignIn-iOS"),
                 .target(name: "FirebaseWrapper")
             ]
         )

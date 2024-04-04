@@ -1,7 +1,8 @@
-import Foundation
 import UIKit
+import FirebaseCore
 import FirebaseWrapper
 import FirebaseAuth
+import GoogleSignIn
 import SwiftBoost
 
 public class FirebaseWrapperAuth {
@@ -19,6 +20,10 @@ public class FirebaseWrapperAuth {
                 isAuthedStored = newState
             }
         }
+    }
+    
+    public static func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+        return GIDSignIn.sharedInstance.handle(url)
     }
     
     // MARK: - Data
@@ -57,6 +62,20 @@ public class FirebaseWrapperAuth {
         }
     }
     
+    public static func signInWithGoogle(on controller: UIViewController, completion: ((SignInWithAppleData?, Error?) -> Void)?) {
+        debug("FirebaseWrapper: Auth start sign in with Google")
+        GoogleAuthService.signInWithGoogle(on: controller) { data, googleError in
+            guard let data else {
+                completion?(nil, googleError)
+                return
+            }
+            let credential = GoogleAuthProvider.credential(withIDToken: data.identityToken, accessToken: data.accessToken)
+            Auth.auth().signIn(with: credential) { (authResult, firebaseError) in
+                completion?(nil, firebaseError)
+            }
+        }
+    }
+    
     public static func signOut(completion: @escaping (Error?)->Void) {
         debug("FirebaseWrapper: Auth start sign out")
         do {
@@ -69,23 +88,54 @@ public class FirebaseWrapperAuth {
     
     public static func delete(on controller: UIViewController, completion: @escaping (Error?)->Void) {
         debug("FirebaseWrapper: Auth start delete")
-        signInWithApple(on: controller) { authData, error in
-            guard let code = authData?.authorizationCode else {
-                completion(error)
-                return
-            }
-            Task {
-                do {
-                    try await Auth.auth().revokeToken(withAuthorizationCode: code)
-                    try await Auth.auth().currentUser?.delete()
-                    DispatchQueue.main.async {
-                        completion(nil)
-                    }
-                } catch {
-                    DispatchQueue.main.async {
-                        completion(error)
-                    }
+        
+        guard let providers = Auth.auth().currentUser?.providerData, !providers.isEmpty else {
+            completion(AuthError.cantMakeData)
+            return
+        }
+        
+        // Basic Delete Account
+        let deleteAccountAction = {
+            do {
+                try await Auth.auth().currentUser?.delete()
+                DispatchQueue.main.async {
+                    completion(nil)
                 }
+            } catch {
+                DispatchQueue.main.async {
+                    completion(error)
+                }
+            }
+        }
+        
+        // Check if contains Apple sign in for revoke token first
+        if providers.contains(where: { $0.providerID == "apple.com" }) {
+            signInWithApple(on: controller) { authData, appleError in
+                
+                guard let code = authData?.authorizationCode else {
+                    completion(appleError)
+                    return
+                }
+                
+                Task {
+                    // Revoke Token First
+                    do {
+                        try await Auth.auth().revokeToken(withAuthorizationCode: code)
+                    } catch {
+                        DispatchQueue.main.async {
+                            completion(error)
+                            return
+                        }
+                    }
+                    
+                    // Basic Delete Account
+                    await deleteAccountAction()
+                }
+            }
+        } else {
+            Task {
+                // Basic Delete Account
+                await deleteAccountAction()
             }
         }
     }
