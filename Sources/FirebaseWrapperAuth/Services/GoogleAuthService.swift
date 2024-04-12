@@ -4,7 +4,7 @@ import GoogleSignIn
 
 class GoogleAuthService {
  
-    public static func signInWithGoogle(on controller: UIViewController, completion: ((SignInWithGoogleData?, Error?) -> Void)?) {
+    public static func signIn(on controller: UIViewController, completion: ((SignInWithGoogleData?, Error?) -> Void)?) {
         guard let clientID = FirebaseApp.app()?.options.clientID else {
             completion?(nil, AuthError.cantMakeData)
             return
