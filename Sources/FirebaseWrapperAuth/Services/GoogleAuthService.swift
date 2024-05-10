@@ -4,20 +4,20 @@ import GoogleSignIn
 
 class GoogleAuthService {
  
-    public static func signIn(on controller: UIViewController, completion: ((SignInWithGoogleData?, Error?) -> Void)?) {
+    public static func signIn(on controller: UIViewController, completion: ((SignInWithGoogleData?, FWAuthSignInError?) -> Void)?) {
         guard let clientID = FirebaseApp.app()?.options.clientID else {
-            completion?(nil, AuthError.cantMakeData)
+            completion?(nil, .failed)
             return
         }
         let config = GIDConfiguration(clientID: clientID)
         GIDSignIn.sharedInstance.configuration = config
         GIDSignIn.sharedInstance.signIn(withPresenting: controller) { result, googleError in
             guard googleError == nil else {
-                completion?(nil, googleError)
+                completion?(nil, .failed)
                 return
             }
             guard let user = result?.user, let idToken = user.idToken?.tokenString else {
-                completion?(nil, AuthError.cantMakeData)
+                completion?(nil, .failed)
                 return
             }
             let data = SignInWithGoogleData(identityToken: idToken, accessToken: user.accessToken.tokenString)

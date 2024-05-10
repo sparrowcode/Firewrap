@@ -9,10 +9,10 @@ public class FirebaseWrapperAuth {
     
     public static func configure(authDidChangedWork: (() -> Void)? = nil) {
         // Logs
-        debug("FirebaseWrapper: Auth configure.")
-        debug("FirebaseWrapper: Current state isAuthed: " + (isAuthed ? "true" : "false"))
+        printConsole("Configure...")
+        printConsole("Current state isAuthed: " + (isAuthed ? "true" : "false"))
         if isAuthed {
-            debug("FirebaseWrapper: userID: \(userID ?? .empty), email: \(userEmail ?? "nil")")
+            printConsole("userID: \(userID ?? .empty), email: \(userEmail ?? "nil")")
         }
         // Observer Clean
         if let observer = shared.observer {
@@ -27,12 +27,14 @@ public class FirebaseWrapperAuth {
                 isAuthedStored = newState
             }
         }
+        printConsole("Configure Complete")
     }
     
     public static func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
         let handleEmailWay = handleSignInWithEmailURL(url) { error in
-            // Process auth after handle email
+            shared.completionSignInViaEmail?(error)
         }
+        
         if handleEmailWay {
             return true
         } else {
@@ -58,6 +60,9 @@ public class FirebaseWrapperAuth {
         return providers
     }
     
+    /**
+     Cached value if user authed
+     */
     private static var isAuthedStored: Bool {
         get { UserDefaults.standard.bool(forKey: "firebase_wrapper_auth_is_authed_stored") }
         set { UserDefaults.standard.set(newValue, forKey: "firebase_wrapper_auth_is_authed_stored") }
@@ -65,19 +70,20 @@ public class FirebaseWrapperAuth {
     
     // MARK: - Actions
     
-    public static func signInWithApple(on controller: UIViewController, completion: ((SignInWithAppleData?, Error?) -> Void)?) {
-        debug("FirebaseWrapper: Auth start sign in with Apple")
+    public static func signInWithApple(on controller: UIViewController, completion: ((SignInWithAppleData?, FWAuthSignInError?) -> Void)?) {
+        printConsole("Sign in with Apple...")
         guard let window = controller.view.window else {
-            completion?(nil, AuthError.cantPresent)
+            completion?(nil, .cantPresent)
             return
         }
         AppleAuthService.signIn(on: window) { data, appleError in
             if let appleError {
-                debug("FirebaseWrapper: Sign in with Apple error: \(appleError.localizedDescription)")
+                printConsole("Sign in with Apple got error: \(appleError.localizedDescription)")
+                completion?(nil, .failed)
                 return
             }
             guard let data else {
-                completion?(nil, AuthError.cantMakeData)
+                completion?(nil, .failed)
                 return
             }
             let credential = OAuthProvider.appleCredential(
@@ -86,147 +92,109 @@ public class FirebaseWrapperAuth {
                 fullName: data.name
             )
             Auth.auth().signIn(with: credential) { (authResult, firebaseError) in
-                completion?(data, firebaseError)
+                if let firebaseError {
+                    printConsole("Sign in with Apple complete with Firebase error: \(firebaseError.localizedDescription)")
+                    completion?(data, .failed)
+                } else {
+                    printConsole("Sign in with Apple complete")
+                    completion?(data, nil)
+                }
             }
         }
     }
     
-    public static func signInWithGoogle(on controller: UIViewController, completion: ((SignInWithAppleData?, Error?) -> Void)?) {
-        debug("FirebaseWrapper: Auth start sign in with Google")
+    public static func signInWithGoogle(on controller: UIViewController, completion: ((FWAuthSignInError?) -> Void)?) {
+        printConsole("Sign in with Google...")
         GoogleAuthService.signIn(on: controller) { data, googleError in
             if let googleError {
-                debug("FirebaseWrapper: Sign in with Google error: \(googleError.localizedDescription)")
+                printConsole("Sign in with Google got error: \(googleError.localizedDescription)")
+                completion?(googleError)
                 return
             }
             guard let data else {
-                completion?(nil, AuthError.cantMakeData)
+                completion?(.failed)
                 return
             }
             let credential = GoogleAuthProvider.credential(withIDToken: data.identityToken, accessToken: data.accessToken)
             Auth.auth().signIn(with: credential) { (authResult, firebaseError) in
-                completion?(nil, firebaseError)
+                if let firebaseError {
+                    printConsole("Sign in with Google complete with Firebase error: \(firebaseError.localizedDescription)")
+                    completion?(.failed)
+                } else {
+                    printConsole("Sign in with Google complete")
+                    completion?(.mustConfirmViaEmail) // Not exactly error, but shoud show user what need open email
+                }
             }
         }
     }
     
-    public static func signInWithEmail(email: String, handleURL: URL, completion: ((Error?) -> Void)?) {
-        debug("FirebaseWrapper: Auth start sign in with Email")
+    /**
+     Firebase asking about Dynamic Links, but its will depicated. Observing how shoud change it
+     */
+    public static func signInWithEmail(email: String, handleURL: URL, completion: ((FWAuthSignInError?) -> Void)?) {
+        printConsole("Sign in with Email...")
         EmailAuthService.signIn(email: email, handleURL: handleURL) { emailError in
             if let emailError {
-                debug("FirebaseWrapper: Sign in with Email error: \(emailError.localizedDescription)")
+                printConsole("Sign in with Email complete with Firebase error: \(emailError.localizedDescription)")
+                completion?(.failed)
+            } else {
+                printConsole("Sign in with Email complete")
+                shared.completionSignInViaEmail = completion
+                completion?(.mustConfirmViaEmail)
             }
-            completion?(emailError)
         }
     }
     
-    static func handleSignInWithEmailURL(_ url: URL, completion: ((Error?) -> Void)?) -> Bool {
+    static func handleSignInWithEmailURL(_ url: URL, completion: ((FWAuthSignInError?) -> Void)?) -> Bool {
         guard Auth.auth().isSignIn(withEmailLink: url.absoluteString) else {
-            completion?(AuthError.cantMakeData)
+            completion?(nil)
             return false
         }
         guard let processingEmail = EmailAuthService.processingEmail else {
-            completion?(AuthError.cantMakeData)
+            completion?(.failed)
             return false
         }
         Auth.auth().signIn(withEmail: processingEmail, link: url.absoluteString) { user, emailError in
-            completion?(emailError)
+            if let emailError {
+                printConsole("Sign in with Email confirm action complete with Firebase error: \(emailError.localizedDescription)")
+                completion?(.failed)
+            } else {
+                printConsole("Sign in with Email confirm action complete")
+                completion?(nil)
+            }
         }
         return true
     }
     
     public static func signOut(completion: @escaping (Error?)->Void) {
-        debug("FirebaseWrapper: Auth start sign out")
+        printConsole("Sign out...")
         do {
             try Auth.auth().signOut()
             completion(nil)
         } catch {
             completion(error)
         }
+        printConsole("Sign out complete")
     }
     
-    public static func delete(on controller: UIViewController, completion: @escaping (Error?)->Void) {
-        debug("FirebaseWrapper: Auth start delete")
-        
-        // Basic Delete Account
-        let deleteAccountAction = {
-            do {
-                try await Auth.auth().currentUser?.delete()
-                DispatchQueue.main.async {
-                    completion(nil)
+    public static func revokeSignInWithApple(authorizationCode: String) {
+        printConsole("Revoke Sign in with Apple Token")
+        Auth.auth().revokeToken(withAuthorizationCode: authorizationCode)
+    }
+    
+    public static func delete(completion: @escaping (FWADeleteProfileError?)->Void) {
+        printConsole("Deleting Profile...")
+        Auth.auth().currentUser?.delete(completion: { deleteError in
+            let unwrapDeleteError: FWADeleteProfileError? = {
+                if let deleteError {
+                    return FWADeleteProfileError.get(by: deleteError) ?? .failed
+                } else {
+                    return nil
                 }
-            } catch {
-                DispatchQueue.main.async {
-                    completion(error)
-                }
-            }
-        }
-        
-        let providers = providers
-        if providers.isEmpty {
-            #warning("del account error make enum")
-            completion(AuthError.cantMakeData)
-            return
-        }
-        
-        let provider = providers.first!
-        
-        // Check which provider for reauth https://firebase.google.com/docs/auth/ios/manage-users#delete_a_user
-        // Check if sign in with apple for revoke token, maybe first do it and later check others
-        // after auth deelte account
-        // FIRAuthErrorCodeCredentialTooOld error when delete call reauth only when happen this error
-        
-        /*
-        guard let providers = Auth.auth().currentUser?.providerData, !providers.isEmpty else {
-            completion(AuthError.cantMakeData)
-            return
-        }
-        
-        
-        
-        // Basic Delete Account
-        let deleteAccountAction = {
-            do {
-                try await Auth.auth().currentUser?.delete()
-                DispatchQueue.main.async {
-                    completion(nil)
-                }
-            } catch {
-                DispatchQueue.main.async {
-                    completion(error)
-                }
-            }
-        }
-        
-        // Check if contains Apple sign in for revoke token first
-        if providers.contains(where: { $0.providerID == "apple.com" }) {
-            signInWithApple(on: controller) { authData, appleError in
-                
-                guard let code = authData?.authorizationCode else {
-                    completion(appleError)
-                    return
-                }
-                
-                Task {
-                    // Revoke Token First
-                    do {
-                        try await Auth.auth().revokeToken(withAuthorizationCode: code)
-                    } catch {
-                        DispatchQueue.main.async {
-                            completion(error)
-                            return
-                        }
-                    }
-                    
-                    // Basic Delete Account
-                    await deleteAccountAction()
-                }
-            }
-        } else {
-            Task {
-                // Basic Delete Account
-                await deleteAccountAction()
-            }
-        }*/
+            }()
+            completion(unwrapDeleteError)
+            printConsole("Delete Profile complete")
+        })
     }
     
     public static func setDisplayName(_ name: String, completion: @escaping (Error?)->Void) {
@@ -237,9 +205,14 @@ public class FirebaseWrapperAuth {
         }
     }
     
+    private static func printConsole(_ text: String) {
+        debug("FirebaseWrapper, Auth: " + text)
+    }
+    
     // MARK: - Singltone
     
     private var observer: AuthStateDidChangeListenerHandle?
     private static let shared = FirebaseWrapperAuth()
+    private var completionSignInViaEmail: ((FWAuthSignInError?) -> Void)? = nil
     private init() {}
 }

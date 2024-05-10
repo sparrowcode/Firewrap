@@ -5,13 +5,12 @@ import FirebaseAuth
 class EmailAuthService {
  
     static func signIn(email: String, handleURL: URL, completion: ((Error?) -> Void)?) {
-        
         let actionCodeSettings = ActionCodeSettings()
         actionCodeSettings.url = handleURL
         actionCodeSettings.handleCodeInApp = true
         actionCodeSettings.setIOSBundleID(Bundle.main.bundleIdentifier!)
-        
         Auth.auth().sendSignInLink(toEmail: email, actionCodeSettings: actionCodeSettings) { emailError in
+            print(emailError.debugDescription)
             completion?(emailError)
         }
     }

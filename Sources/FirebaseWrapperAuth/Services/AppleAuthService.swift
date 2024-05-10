@@ -25,7 +25,8 @@ class AppleAuthService: NSObject, ASAuthorizationControllerDelegate, ASAuthoriza
             let authorizationCode = appleCredential.authorizationCode,
             let authorizationCodeString = String(data: authorizationCode, encoding: .utf8)
         else {
-            completion?(nil, AuthError.cantMakeData)
+            // todo parse
+            completion?(nil, FWAuthSignInError.failed)
             return
         }
         
@@ -39,7 +40,17 @@ class AppleAuthService: NSObject, ASAuthorizationControllerDelegate, ASAuthoriza
     }
     
     func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
-        completion?(nil, error)
+        if let error = error as? ASAuthorizationError {
+            switch error.code {
+            case .canceled:
+                // Cancel sign in not error
+                completion?(nil, nil)
+                return
+            default:
+                completion?(nil, error)
+            }
+        }
+        
     }
     
     // MARK: - ASAuthorizationControllerPresentationContextProviding

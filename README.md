@@ -1,3 +1,5 @@
 # FirebaseWrapper 
 
-## Remote Config ✅
+- Auth
+- Analytics
+- Remote Config ✅
