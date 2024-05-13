@@ -5,21 +5,25 @@ import PackageDescription
 let SwiftBoost: Target.Dependency = .product(name: "SwiftBoost", package: "SwiftBoost")
 
 let package = Package(
-    name: "FirebaseWrapper",
+    name: "Firewrap",
     defaultLocalization: "en",
     platforms: [.iOS(.v13), .macCatalyst(.v13), .macOS(.v10_13), .tvOS(.v12), .watchOS(.v7)],
     products: [
-        .library(
+        /*.library(
             name: "FirebaseWrapper",
             targets: ["FirebaseWrapper"]
+        ),*/
+        .library(
+            name: "FirewrapAuth",
+            targets: ["FirewrapAuth"]
         ),
         .library(
-            name: "FirebaseWrapperRemoteConfig", 
-            targets: ["FirebaseWrapperRemoteConfig"]
+            name: "FirewrapDatabase",
+            targets: ["FirewrapDatabase"]
         ),
         .library(
-            name: "FirebaseWrapperAuth",
-            targets: ["FirebaseWrapperAuth"]
+            name: "FirewrapRemoteConfig",
+            targets: ["FirewrapRemoteConfig"]
         )
     ],
     dependencies: [
@@ -29,25 +33,32 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "FirebaseWrapper",
+            name: "Firewrap",
             dependencies: [
                 SwiftBoost,
                 .product(name: "FirebaseAnalytics", package: "firebase-ios-sdk"),
             ]
         ),
         .target(
-            name: "FirebaseWrapperRemoteConfig",
-            dependencies: [
-                .product(name: "FirebaseRemoteConfig", package: "firebase-ios-sdk"),
-                .target(name: "FirebaseWrapper")
-            ]
-        ),
-        .target(
-            name: "FirebaseWrapperAuth",
+            name: "FirewrapAuth",
             dependencies: [
                 .product(name: "FirebaseAuth", package: "firebase-ios-sdk"),
                 .product(name: "GoogleSignIn", package: "GoogleSignIn-iOS"),
-                .target(name: "FirebaseWrapper")
+                .target(name: "Firewrap")
+            ]
+        ),
+        .target(
+            name: "FirewrapDatabase",
+            dependencies: [
+                .product(name: "FirebaseFirestore", package: "firebase-ios-sdk"),
+                .target(name: "Firewrap")
+            ]
+        ),
+        .target(
+            name: "FirewrapRemoteConfig",
+            dependencies: [
+                .product(name: "FirewrapRemoteConfig", package: "firebase-ios-sdk"),
+                .target(name: "Firewrap")
             ]
         )
     ]
