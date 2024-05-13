@@ -1,11 +1,11 @@
 import UIKit
 import FirebaseCore
-import FirebaseWrapper
+import Firewrap
 import FirebaseAuth
 import GoogleSignIn
 import SwiftBoost
 
-public class FirebaseWrapperAuth {
+public class FirewrapAuth {
     
     public static func configure(authDidChangedWork: (() -> Void)? = nil) {
         // Logs
@@ -49,11 +49,11 @@ public class FirebaseWrapperAuth {
     public static var userName: String? { Auth.auth().currentUser?.displayName }
     public static var userEmail: String? { Auth.auth().currentUser?.email }
     
-    public static var providers: [FirebaseAuthProvider] {
+    public static var providers: [FirewrapAuthProvider] {
         guard let providerData = Auth.auth().currentUser?.providerData else { return [] }
-        var providers: [FirebaseAuthProvider] = []
+        var providers: [FirewrapAuthProvider] = []
         for providerMeta in providerData {
-            if let provider = FirebaseAuthProvider.getByBaseURL(providerMeta.providerID) {
+            if let provider = FirewrapAuthProvider.getByBaseURL(providerMeta.providerID) {
                 providers.append(provider)
             }
         }
@@ -70,7 +70,7 @@ public class FirebaseWrapperAuth {
     
     // MARK: - Actions
     
-    public static func signInWithApple(on controller: UIViewController, completion: ((SignInWithAppleData?, FWAuthSignInError?) -> Void)?) {
+    public static func signInWithApple(on controller: UIViewController, completion: ((SignInWithAppleData?, FirewrapAuthSignInError?) -> Void)?) {
         printConsole("Sign in with Apple...")
         guard let window = controller.view.window else {
             completion?(nil, .cantPresent)
@@ -103,7 +103,7 @@ public class FirebaseWrapperAuth {
         }
     }
     
-    public static func signInWithGoogle(on controller: UIViewController, completion: ((FWAuthSignInError?) -> Void)?) {
+    public static func signInWithGoogle(on controller: UIViewController, completion: ((FirewrapAuthSignInError?) -> Void)?) {
         printConsole("Sign in with Google...")
         GoogleAuthService.signIn(on: controller) { data, googleError in
             if let googleError {
@@ -131,7 +131,7 @@ public class FirebaseWrapperAuth {
     /**
      Firebase asking about Dynamic Links, but its will depicated. Observing how shoud change it
      */
-    public static func signInWithEmail(email: String, handleURL: URL, completion: ((FWAuthSignInError?) -> Void)?) {
+    public static func signInWithEmail(email: String, handleURL: URL, completion: ((FirewrapAuthSignInError?) -> Void)?) {
         printConsole("Sign in with Email...")
         EmailAuthService.signIn(email: email, handleURL: handleURL) { emailError in
             if let emailError {
@@ -145,7 +145,7 @@ public class FirebaseWrapperAuth {
         }
     }
     
-    static func handleSignInWithEmailURL(_ url: URL, completion: ((FWAuthSignInError?) -> Void)?) -> Bool {
+    static func handleSignInWithEmailURL(_ url: URL, completion: ((FirewrapAuthSignInError?) -> Void)?) -> Bool {
         guard Auth.auth().isSignIn(withEmailLink: url.absoluteString) else {
             completion?(nil)
             return false
@@ -182,12 +182,12 @@ public class FirebaseWrapperAuth {
         Auth.auth().revokeToken(withAuthorizationCode: authorizationCode)
     }
     
-    public static func delete(completion: @escaping (FWADeleteProfileError?)->Void) {
+    public static func delete(completion: @escaping (FirewrapDeleteProfileError?)->Void) {
         printConsole("Deleting Profile...")
         Auth.auth().currentUser?.delete(completion: { deleteError in
-            let unwrapDeleteError: FWADeleteProfileError? = {
+            let unwrapDeleteError: FirewrapDeleteProfileError? = {
                 if let deleteError {
-                    return FWADeleteProfileError.get(by: deleteError) ?? .failed
+                    return FirewrapDeleteProfileError.get(by: deleteError) ?? .failed
                 } else {
                     return nil
                 }
@@ -206,13 +206,13 @@ public class FirebaseWrapperAuth {
     }
     
     private static func printConsole(_ text: String) {
-        debug("FirebaseWrapper, Auth: " + text)
+        debug("Firewrap, Auth: " + text)
     }
     
     // MARK: - Singltone
     
     private var observer: AuthStateDidChangeListenerHandle?
-    private static let shared = FirebaseWrapperAuth()
-    private var completionSignInViaEmail: ((FWAuthSignInError?) -> Void)? = nil
+    private static let shared = FirewrapAuth()
+    private var completionSignInViaEmail: ((FirewrapAuthSignInError?) -> Void)? = nil
     private init() {}
 }

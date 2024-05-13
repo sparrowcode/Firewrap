@@ -1,15 +1,15 @@
 import Foundation
-import FirebaseWrapper
+import Firewrap
 import FirebaseRemoteConfig
 import SwiftBoost
 
-class FirebaseRemoteConfigWrapper {
+class FirewrapRemoteConfig {
     
     public static func configure(
         defaults: [String : NSObject]? = nil,
         updatedHandler: (() -> Void)? = nil
     ) {
-        debug("FirebaseWrapper: RemoteConfig configure")
+        printConsole("RemoteConfig configure")
         shared.updatedHandler = updatedHandler
         
         let settings = RemoteConfigSettings()
@@ -17,13 +17,13 @@ class FirebaseRemoteConfigWrapper {
         shared.remoteConfig.configSettings = settings
         shared.remoteConfig.setDefaults(defaults ?? [:])
         
-        debug("FirebaseWrapper: RemoteConfig fetchAndActivate")
+        printConsole("RemoteConfig fetchAndActivate")
         shared.remoteConfig.fetch { updateStatus, getError in
             switch updateStatus {
             case .success:
                 activateNewConfig()
             case .failure, .noFetchYet, .throttled:
-                error("FirebaseWrapper: RemoteConfig initial get with error, " + (getError?.localizedDescription ?? .empty))
+                printConsole("RemoteConfig initial get with error, " + (getError?.localizedDescription ?? .empty))
                 break
             @unknown default:
                 break
@@ -32,10 +32,10 @@ class FirebaseRemoteConfigWrapper {
         
         shared.remoteConfig.addOnConfigUpdateListener { configUpdate, listnerError in
             guard listnerError == nil else {
-                error("FirebaseWrapper: RemoteConfig got update in listner with error, " + (listnerError?.localizedDescription ?? .empty))
+                printConsole("RemoteConfig got update in listner with error, " + (listnerError?.localizedDescription ?? .empty))
                 return
             }
-            debug("FirebaseWrapper: RemoteConfig activate after got new in listner")
+            printConsole("RemoteConfig activate after got new in listner")
             activateNewConfig()
         }
     }
@@ -43,7 +43,7 @@ class FirebaseRemoteConfigWrapper {
     private static func activateNewConfig() {
         shared.remoteConfig.activate { changed, activateError in
             guard activateError == nil else {
-                error("FirebaseWrapper: RemoteConfig can't activate after got new in listner, " + (activateError?.localizedDescription ?? .empty))
+                printConsole("RemoteConfig can't activate after got new in listner, " + (activateError?.localizedDescription ?? .empty))
                 return
             }
             
@@ -56,8 +56,12 @@ class FirebaseRemoteConfigWrapper {
         shared.remoteConfig.configValue(forKey: key).boolValue
     }
     
+    private static func printConsole(_ text: String) {
+        debug("Firewrap, Auth: " + text)
+    }
+    
     private var updatedHandler: (() -> Void)? = nil
-    private static let shared = FirebaseRemoteConfigWrapper()
+    private static let shared = FirewrapRemoteConfig()
     private let remoteConfig = FirebaseRemoteConfig.RemoteConfig.remoteConfig()
     private init() {}
 }

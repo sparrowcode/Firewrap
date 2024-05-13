@@ -1,4 +1,4 @@
-# FirebaseWrapper 
+# Firewrap (Firebase Wrapper) 
 
 - Auth
 - Analytics

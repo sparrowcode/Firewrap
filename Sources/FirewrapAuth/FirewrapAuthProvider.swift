@@ -1,6 +1,6 @@
 import Foundation
 
-public enum FirebaseAuthProvider: String, CaseIterable {
+public enum FirewrapAuthProvider: String, CaseIterable {
     
     case apple
     case google
@@ -8,13 +8,13 @@ public enum FirebaseAuthProvider: String, CaseIterable {
     
     public var id: String { rawValue }
     
-    static func getByBaseURL(_ url: String) -> FirebaseAuthProvider? {
+    static func getByBaseURL(_ url: String) -> FirewrapAuthProvider? {
         for provider in Self.allCases {
             if url == provider.baseURL {
                 return provider
             }
         }
-        print("FirebaseWrapper: Can't get provider by web url \(url)")
+        print("Firewrap: Can't get provider by web url \(url)")
         return nil
     }
     

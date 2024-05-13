@@ -1,13 +1,13 @@
 import Foundation
 import FirebaseAuth
 
-public enum FWADeleteProfileError: Error {
+public enum FirewrapDeleteProfileError: Error {
     
     case requiredLogin
     case faildSignInConfirm
     case failed
     
-    public static func get(by error: Error) -> FWADeleteProfileError? {
+    public static func get(by error: Error) -> FirewrapDeleteProfileError? {
         let error = error as NSError
         guard error.domain == AuthErrorDomain else{
             return nil

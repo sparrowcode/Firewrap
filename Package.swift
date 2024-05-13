@@ -9,10 +9,6 @@ let package = Package(
     defaultLocalization: "en",
     platforms: [.iOS(.v13), .macCatalyst(.v13), .macOS(.v10_13), .tvOS(.v12), .watchOS(.v7)],
     products: [
-        /*.library(
-            name: "FirebaseWrapper",
-            targets: ["FirebaseWrapper"]
-        ),*/
         .library(
             name: "FirewrapAuth",
             targets: ["FirewrapAuth"]
@@ -57,7 +53,7 @@ let package = Package(
         .target(
             name: "FirewrapRemoteConfig",
             dependencies: [
-                .product(name: "FirewrapRemoteConfig", package: "firebase-ios-sdk"),
+                .product(name: "FirebaseRemoteConfig", package: "firebase-ios-sdk"),
                 .target(name: "Firewrap")
             ]
         )

@@ -1,7 +1,7 @@
 import Foundation
 import FirebaseAuth
 
-public enum FWAuthSignInError: Error {
+public enum FirewrapAuthSignInError: Error {
     
     case cantPresent
     case mustConfirmViaEmail

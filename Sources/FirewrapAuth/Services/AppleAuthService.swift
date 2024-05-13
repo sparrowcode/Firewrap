@@ -26,7 +26,7 @@ class AppleAuthService: NSObject, ASAuthorizationControllerDelegate, ASAuthoriza
             let authorizationCodeString = String(data: authorizationCode, encoding: .utf8)
         else {
             // todo parse
-            completion?(nil, FWAuthSignInError.failed)
+            completion?(nil, FirewrapAuthSignInError.failed)
             return
         }
         

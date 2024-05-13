@@ -16,7 +16,7 @@ public enum FWFirestoreSource {
     }
 }
 
-public class FirebaseDocument {
+public class FirewrapDocument {
     
     public let path: String
     
@@ -48,25 +48,6 @@ public class FirebaseDocument {
     }
     
     public func observe(_ handler: () -> Void) {
-        
-    }
-}
-
-class FirebaseCollection {
-    
-    func getDocument(id: String) -> FirebaseDocument? {
-        return nil
-    }
-    
-    func getDocument(where field: String, equal: Any) -> FirebaseDocument? {
-        return nil
-    }
-    
-    func getDocuments() -> [FirebaseDocument]? {
-        return nil
-    }
-    
-    func observe(_ handler: () -> Void) {
         
     }
 }
