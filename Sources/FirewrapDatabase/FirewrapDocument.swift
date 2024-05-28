@@ -1,43 +1,33 @@
 import Foundation
 import FirebaseFirestore
 
-public enum FWFirestoreSource {
-    
-    case `default`
-    case server
-    case cache
-    
-    var firebaseValue: FirestoreSource {
-        switch self {
-        case .default: return .default
-        case .server: return .server
-        case .cache: return .cache
-        }
-    }
-}
-
 public class FirewrapDocument {
     
     public let path: String
+    private var listener: ListenerRegistration?
     
     public init(_ path: String) {
         self.path = path
     }
     
-    public func set(_ data: [String : Any], merge: Bool) {
-        let db = Firestore.firestore()
-        db.document(path).setData(data, merge: merge)
-    }
+    // MARK: - Getter
     
-    public func get(_ source: FWFirestoreSource = .default, completion: @escaping (([String : Any]?) -> Void)) {
+    public func get(_ source: FirewrapSource = .default, completion: @escaping (([String : Any]?) -> Void)) {
         let db = Firestore.firestore()
         db.document(path).getDocument(source: source.firebaseValue) { document, error in
-            if error == nil {
+            guard error == nil else {
                 completion(nil)
                 return
             }
             completion(document?.data())
         }
+    }
+    
+    // MARK: - Setter
+    
+    public func set(_ data: [String : Any], merge: Bool) {
+        let db = Firestore.firestore()
+        db.document(path).setData(data, merge: merge)
     }
     
     public func delete(_ completion: @escaping (Bool) -> Void) {
@@ -47,7 +37,21 @@ public class FirewrapDocument {
         }
     }
     
-    public func observe(_ handler: () -> Void) {
-        
+    // MARK: - Observer
+    
+    public func observe(_ handler: @escaping (([String : Any]?) -> Void)) {
+        self.listener?.remove()
+        let db = Firestore.firestore()
+        self.listener = db.document(path).addSnapshotListener { document, error in
+            if let document, let data = document.data() {
+                handler(data)
+            } else {
+                handler(nil)
+            }
+        }
+    }
+    
+    public func removeObserver() {
+        self.listener?.remove()
     }
 }

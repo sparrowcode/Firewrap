@@ -8,16 +8,18 @@ import SwiftBoost
 public class FirewrapAuth {
     
     public static func configure(authDidChangedWork: (() -> Void)? = nil) {
+        
         // Logs
-        printConsole("Configure...")
-        printConsole("Current state isAuthed: " + (isAuthed ? "true" : "false"))
+        printConsole("Start configure. Current state isAuthed: " + (isAuthed ? "true" : "false"))
         if isAuthed {
-            printConsole("userID: \(userID ?? .empty), email: \(userEmail ?? "nil")")
+            printConsole("User info: userID: \(userID ?? .empty), email: \(userEmail ?? "nil")")
         }
+        
         // Observer Clean
         if let observer = shared.observer {
             Auth.auth().removeStateDidChangeListener(observer)
         }
+        
         // Configure Observer
         shared.observer = Auth.auth().addStateDidChangeListener { auth, user in
             let newState = isAuthed
@@ -27,6 +29,7 @@ public class FirewrapAuth {
                 isAuthedStored = newState
             }
         }
+        
         printConsole("Configure Complete")
     }
     

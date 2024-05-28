@@ -1,9 +1,23 @@
 # Firewrap (Firebase Wrapper) 
 
-- Auth
-- Analytics
-- Remote Config ✅
+## Database
 
-## Todo
+```swift
+// Make document
+let document = FirewrapDocument("/example1/doc-example")
 
-Examples calls for modules
+
+document.get { data in
+    // Get data once
+}
+
+document.observe { data in
+    Observe data
+}
+```
+
+## Analytics
+
+## Auth
+
+## Remote Config
