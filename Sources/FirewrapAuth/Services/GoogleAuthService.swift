@@ -1,5 +1,6 @@
+#if os(iOS) || os(macOS)
 import UIKit
-import FirebaseCore
+import Firebase
 import GoogleSignIn
 
 class GoogleAuthService {
@@ -31,3 +32,4 @@ public struct SignInWithGoogleData {
     public let identityToken: String
     public let accessToken: String
 }
+#endif

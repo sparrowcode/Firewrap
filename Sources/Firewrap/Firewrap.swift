@@ -1,5 +1,5 @@
 import Foundation
-import FirebaseCore
+import Firebase
 import SwiftBoost
 
 open class Firewrap {

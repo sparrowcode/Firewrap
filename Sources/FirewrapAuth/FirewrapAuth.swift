@@ -1,9 +1,9 @@
-import UIKit
-import FirebaseCore
+import Foundation
 import Firewrap
+import Firebase
 import FirebaseAuth
-import GoogleSignIn
 import SwiftBoost
+import UIKit
 
 public class FirewrapAuth {
     
@@ -33,6 +33,7 @@ public class FirewrapAuth {
         printConsole("Configure Complete")
     }
     
+    
     public static func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
         let handleEmailWay = handleSignInWithEmailURL(url) { error in
             shared.completionSignInViaEmail?(error)
@@ -41,9 +42,14 @@ public class FirewrapAuth {
         if handleEmailWay {
             return true
         } else {
-            return GIDSignIn.sharedInstance.handle(url)
+            #if os(iOS) || os(macOS)
+            return false//GIDSignIn.sharedInstance.handle(url)
+            #else
+            return false
+            #endif
         }
     }
+    
     
     // MARK: - Data
     
@@ -106,6 +112,7 @@ public class FirewrapAuth {
         }
     }
     
+    #if os(iOS) || os(macOS)
     public static func signInWithGoogle(on controller: UIViewController, completion: ((FirewrapAuthSignInError?) -> Void)?) {
         printConsole("Sign in with Google...")
         GoogleAuthService.signIn(on: controller) { data, googleError in
@@ -130,6 +137,7 @@ public class FirewrapAuth {
             }
         }
     }
+    #endif
     
     /**
      Firebase asking about Dynamic Links, but its will depicated. Observing how shoud change it

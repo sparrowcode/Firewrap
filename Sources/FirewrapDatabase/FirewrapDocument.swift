@@ -1,5 +1,9 @@
+#if os(iOS)
 import Foundation
 import FirebaseFirestore
+
+// Using for wrap default firebase value
+public typealias FirewrapFieldNil = NSNull
 
 public class FirewrapDocument {
     
@@ -12,6 +16,7 @@ public class FirewrapDocument {
     
     // MARK: - Getter
     
+#warning("add error or state")
     public func get(_ source: FirewrapSource = .default, completion: @escaping (([String : Any]?) -> Void)) {
         let db = Firestore.firestore()
         db.document(path).getDocument(source: source.firebaseValue) { document, error in
@@ -25,9 +30,16 @@ public class FirewrapDocument {
     
     // MARK: - Setter
     
-    public func set(_ data: [String : Any], merge: Bool) {
+    #warning("add error or state")
+    public func set(_ data: [String : Any], merge: Bool, completion: @escaping (() -> Void)) {
         let db = Firestore.firestore()
-        db.document(path).setData(data, merge: merge)
+        db.document(path).setData(data, merge: merge) { error in
+            guard error == nil else {
+                completion()
+                return
+            }
+            completion()
+        }
     }
     
     public func delete(_ completion: @escaping (Bool) -> Void) {
@@ -55,3 +67,4 @@ public class FirewrapDocument {
         self.listener?.remove()
     }
 }
+#endif

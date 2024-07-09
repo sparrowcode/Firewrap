@@ -1,5 +1,5 @@
 import UIKit
-import FirebaseCore
+import Firebase
 import FirebaseAuth
 
 class EmailAuthService {

@@ -1,7 +1,8 @@
+#if os(iOS)
 import Foundation
 import FirebaseFirestore
 
-class FirewrapCollection {
+public class FirewrapCollection {
     
     public let path: String
     private var listener: ListenerRegistration?
@@ -48,3 +49,4 @@ class FirewrapCollection {
         }
     }
 }
+#endif

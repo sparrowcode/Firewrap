@@ -2,12 +2,17 @@
 
 import PackageDescription
 
-let SwiftBoost: Target.Dependency = .product(name: "SwiftBoost", package: "SwiftBoost")
-
 let package = Package(
     name: "Firewrap",
     defaultLocalization: "en",
-    platforms: [.iOS(.v13), .macCatalyst(.v13), .macOS(.v10_13), .tvOS(.v12), .watchOS(.v7)],
+    platforms: [
+        .iOS(.v13),
+        .macCatalyst(.v13),
+        .macOS(.v10_13),
+        .tvOS(.v12),
+        .watchOS(.v7),
+        .visionOS(.v1)
+    ],
     products: [
         .library(
             name: "FirewrapAuth",
@@ -23,15 +28,15 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "https://github.com/firebase/firebase-ios-sdk", .upToNextMajor(from: "10.23.0")),
+        .package(url: "https://github.com/firebase/firebase-ios-sdk", .exactItem("10.29.0")),
         .package(url: "https://github.com/google/GoogleSignIn-iOS", .upToNextMajor(from: "7.1.0")),
-        .package(url: "https://github.com/sparrowcode/SwiftBoost", .upToNextMajor(from: "4.0.9")),
+        .package(url: "https://github.com/sparrowcode/SwiftBoost", .upToNextMajor(from: "4.0.9"))
     ],
     targets: [
         .target(
             name: "Firewrap",
             dependencies: [
-                SwiftBoost,
+                .product(name: "SwiftBoost", package: "SwiftBoost"),
                 .product(name: "FirebaseAnalytics", package: "firebase-ios-sdk"),
             ]
         ),
