@@ -1,3 +1,4 @@
+#if os(iOS)
 import Foundation
 import FirebaseFirestore
 
@@ -15,3 +16,4 @@ public enum FirewrapSource {
         }
     }
 }
+#endif

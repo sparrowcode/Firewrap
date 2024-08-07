@@ -12,8 +12,9 @@ public enum FirewrapDeleteProfileError: Error {
         guard error.domain == AuthErrorDomain else{
             return nil
         }
-        let code = AuthErrorCode.init(_nsError: error)
-        switch code.code {
+        #warning("here migrated to firebase 11 so need test if code unwrap corectly")
+        let authErrorCode = AuthErrorCode.init(rawValue: error.code)
+        switch authErrorCode {
         case .requiresRecentLogin:
             return .requiredLogin
         default:
