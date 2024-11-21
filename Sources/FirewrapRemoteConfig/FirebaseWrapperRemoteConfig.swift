@@ -57,7 +57,7 @@ class FirewrapRemoteConfig {
     }
     
     private static func printConsole(_ text: String) {
-        debug("Firewrap, Auth: " + text)
+        debug("Firewrap, RemoteConfig: " + text)
     }
     
     private var updatedHandler: (() -> Void)? = nil
