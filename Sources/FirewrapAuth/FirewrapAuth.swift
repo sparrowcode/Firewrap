@@ -3,6 +3,7 @@ import Firewrap
 import Firebase
 import FirebaseAuth
 import SwiftBoost
+import GoogleSignIn
 import UIKit
 
 public class FirewrapAuth {
@@ -35,6 +36,7 @@ public class FirewrapAuth {
     
     
     public static func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+        
         let handleEmailWay = handleSignInWithEmailURL(url) { error in
             shared.completionSignInViaEmail?(error)
         }
@@ -43,7 +45,7 @@ public class FirewrapAuth {
             return true
         } else {
             #if os(iOS) || os(macOS)
-            return false//GIDSignIn.sharedInstance.handle(url)
+            return GIDSignIn.sharedInstance.handle(url)
             #else
             return false
             #endif
@@ -95,19 +97,24 @@ public class FirewrapAuth {
                 completion?(nil, .failed)
                 return
             }
-            let credential = OAuthProvider.appleCredential(
-                withIDToken: data.identityToken,
-                rawNonce: nil,
-                fullName: data.name
-            )
-            Auth.auth().signIn(with: credential) { (authResult, firebaseError) in
-                if let firebaseError {
-                    printConsole("Sign in with Apple complete with Firebase error: \(firebaseError.localizedDescription)")
-                    completion?(data, .failed)
-                } else {
-                    printConsole("Sign in with Apple complete")
-                    completion?(data, nil)
-                }
+            
+            signInWithApple(with: data, completion: completion)
+        }
+    }
+    
+    static func signInWithApple(with data: SignInWithAppleData, completion: ((SignInWithAppleData?, FirewrapAuthSignInError?) -> Void)?) {
+        let credential = OAuthProvider.appleCredential(
+            withIDToken: data.identityToken,
+            rawNonce: nil,
+            fullName: data.name
+        )
+        Auth.auth().signIn(with: credential) { (authResult, firebaseError) in
+            if let firebaseError {
+                printConsole("Sign in with Apple complete with Firebase error: \(firebaseError.localizedDescription)")
+                completion?(data, .failed)
+            } else {
+                printConsole("Sign in with Apple complete successfully")
+                completion?(data, nil)
             }
         }
     }
@@ -149,7 +156,7 @@ public class FirewrapAuth {
                 printConsole("Sign in with Email complete with Firebase error: \(emailError.localizedDescription)")
                 completion?(.failed)
             } else {
-                printConsole("Sign in with Email complete")
+                printConsole("Sign in with Email success complete")
                 shared.completionSignInViaEmail = completion
                 completion?(.mustConfirmViaEmail)
             }

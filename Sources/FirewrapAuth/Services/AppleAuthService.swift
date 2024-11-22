@@ -15,9 +15,7 @@ class AppleAuthService: NSObject, ASAuthorizationControllerDelegate, ASAuthoriza
         authorizationController.performRequests()
     }
     
-    // MARK: - ASAuthorizationControllerDelegate
-    
-    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
+    static func parse(_ authorization: ASAuthorization, completion: ((SignInWithAppleData?, FirewrapAuthSignInError?) -> Void)) {
         guard
             let appleCredential = authorization.credential as? ASAuthorizationAppleIDCredential,
             let identityToken = appleCredential.identityToken,
@@ -25,8 +23,7 @@ class AppleAuthService: NSObject, ASAuthorizationControllerDelegate, ASAuthoriza
             let authorizationCode = appleCredential.authorizationCode,
             let authorizationCodeString = String(data: authorizationCode, encoding: .utf8)
         else {
-            // todo parse
-            completion?(nil, FirewrapAuthSignInError.failed)
+            completion(nil, FirewrapAuthSignInError.failed)
             return
         }
         
@@ -36,7 +33,15 @@ class AppleAuthService: NSObject, ASAuthorizationControllerDelegate, ASAuthoriza
             name: appleCredential.fullName,
             email: appleCredential.email
         )
-        completion?(data, nil)
+        completion(data, nil)
+    }
+    
+    // MARK: - ASAuthorizationControllerDelegate
+    
+    func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
+        Self.parse(authorization) { data, error in
+            self.completion?(data, error)
+        }
     }
     
     func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
