@@ -90,11 +90,11 @@ public class FirewrapAuth {
         AppleAuthService.signIn(on: window) { data, appleError in
             if let appleError {
                 printConsole("Sign in with Apple got error: \(appleError.localizedDescription)")
-                completion?(nil, .failed)
+                completion?(nil, .unknow)
                 return
             }
             guard let data else {
-                completion?(nil, .failed)
+                completion?(nil, .unknow)
                 return
             }
             
@@ -111,7 +111,7 @@ public class FirewrapAuth {
         Auth.auth().signIn(with: credential) { (authResult, firebaseError) in
             if let firebaseError {
                 printConsole("Sign in with Apple complete with Firebase error: \(firebaseError.localizedDescription)")
-                completion?(data, .failed)
+                completion?(data, .unknow)
             } else {
                 printConsole("Sign in with Apple complete successfully")
                 completion?(data, nil)
@@ -129,17 +129,17 @@ public class FirewrapAuth {
                 return
             }
             guard let data else {
-                completion?(.failed)
+                completion?(.unknow)
                 return
             }
             let credential = GoogleAuthProvider.credential(withIDToken: data.identityToken, accessToken: data.accessToken)
             Auth.auth().signIn(with: credential) { (authResult, firebaseError) in
                 if let firebaseError {
                     printConsole("Sign in with Google complete with Firebase error: \(firebaseError.localizedDescription)")
-                    completion?(.failed)
+                    completion?(.unknow)
                 } else {
                     printConsole("Sign in with Google complete")
-                    completion?(.mustConfirmViaEmail) // Not exactly error, but shoud show user what need open email
+                    completion?(nil)
                 }
             }
         }
@@ -154,7 +154,7 @@ public class FirewrapAuth {
         EmailAuthService.signIn(email: email, handleURL: handleURL) { emailError in
             if let emailError {
                 printConsole("Sign in with Email complete with Firebase error: \(emailError.localizedDescription)")
-                completion?(.failed)
+                completion?(.unknow)
             } else {
                 printConsole("Sign in with Email success complete")
                 shared.completionSignInViaEmail = completion
@@ -169,13 +169,13 @@ public class FirewrapAuth {
             return false
         }
         guard let processingEmail = EmailAuthService.processingEmail else {
-            completion?(.failed)
+            completion?(.unknow)
             return false
         }
         Auth.auth().signIn(withEmail: processingEmail, link: url.absoluteString) { user, emailError in
             if let emailError {
                 printConsole("Sign in with Email confirm action complete with Firebase error: \(emailError.localizedDescription)")
-                completion?(.failed)
+                completion?(.unknow)
             } else {
                 printConsole("Sign in with Email confirm action complete")
                 completion?(nil)
@@ -185,14 +185,14 @@ public class FirewrapAuth {
     }
     
     public static func signOut(completion: @escaping (Error?)->Void) {
-        printConsole("Sign out...")
+        printConsole("Sign out run")
         do {
             try Auth.auth().signOut()
             completion(nil)
         } catch {
             completion(error)
         }
-        printConsole("Sign out complete")
+        printConsole("Sign out done")
     }
     
     public static func revokeSignInWithApple(authorizationCode: String) {
@@ -223,7 +223,7 @@ public class FirewrapAuth {
         }
     }
     
-    private static func printConsole(_ text: String) {
+    static func printConsole(_ text: String) {
         debug("Firewrap, Auth: " + text)
     }
     

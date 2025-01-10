@@ -5,5 +5,5 @@ public enum FirewrapAuthSignInError: Error {
     
     case cantPresent
     case mustConfirmViaEmail
-    case failed
+    case unknow
 }

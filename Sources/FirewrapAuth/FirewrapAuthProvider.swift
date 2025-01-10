@@ -14,7 +14,7 @@ public enum FirewrapAuthProvider: String, CaseIterable {
                 return provider
             }
         }
-        print("Firewrap: Can't get provider by web url \(url)")
+        FirewrapAuth.printConsole("Can't get provider by web url \(url)")
         return nil
     }
     

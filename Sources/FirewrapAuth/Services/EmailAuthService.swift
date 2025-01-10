@@ -10,7 +10,9 @@ class EmailAuthService {
         actionCodeSettings.handleCodeInApp = true
         actionCodeSettings.setIOSBundleID(Bundle.main.bundleIdentifier!)
         Auth.auth().sendSignInLink(toEmail: email, actionCodeSettings: actionCodeSettings) { emailError in
-            print(emailError.debugDescription)
+            if let emailError {
+                FirewrapAuth.printConsole(emailError.localizedDescription)
+            }
             completion?(emailError)
         }
     }

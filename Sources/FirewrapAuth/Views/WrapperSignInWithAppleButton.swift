@@ -21,11 +21,11 @@ public struct WrapperSignInWithAppleButton: View {
                     if let data {
                         FirewrapAuth.signInWithApple(with: data, completion: completion)
                     } else {
-                        self.completion?(nil, error ?? .failed)
+                        self.completion?(nil, error ?? .unknow)
                     }
                 }
             case .failure(_):
-                self.completion?(nil, .failed)
+                self.completion?(nil, .unknow)
             }
         }
     }

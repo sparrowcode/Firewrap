@@ -23,7 +23,7 @@ class AppleAuthService: NSObject, ASAuthorizationControllerDelegate, ASAuthoriza
             let authorizationCode = appleCredential.authorizationCode,
             let authorizationCodeString = String(data: authorizationCode, encoding: .utf8)
         else {
-            completion(nil, FirewrapAuthSignInError.failed)
+            completion(nil, FirewrapAuthSignInError.unknow)
             return
         }
         
