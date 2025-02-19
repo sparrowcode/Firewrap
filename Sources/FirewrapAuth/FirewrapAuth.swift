@@ -60,6 +60,10 @@ public class FirewrapAuth {
     public static var userName: String? { Auth.auth().currentUser?.displayName }
     public static var userEmail: String? { Auth.auth().currentUser?.email }
     
+    public static func getIDToken() async throws -> String? {
+        try await Auth.auth().currentUser?.getIDToken()
+    }
+    
     public static var providers: [FirewrapAuthProvider] {
         guard let providerData = Auth.auth().currentUser?.providerData else { return [] }
         var providers: [FirewrapAuthProvider] = []
@@ -140,6 +144,11 @@ public class FirewrapAuth {
                 } else {
                     printConsole("Sign in with Google complete")
                     completion?(nil)
+                    
+                    print("JWT")
+                    Task {
+                        print(await try? FirewrapAuth.getIDToken())
+                    }
                 }
             }
         }

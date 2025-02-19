@@ -23,6 +23,19 @@ public class FirewrapCollection {
     
     // MARK: - Getter
     
+    // MARK: Get Count Documents
+    
+    public func getCountDocuments(completion: @escaping (Int?, Error?) -> Void) {
+        let db = Firestore.firestore()
+        let collection = db.collection(path)
+        let countQuery = collection.count
+        countQuery.getAggregation(source: .server) { snapshot, error in
+            completion(snapshot?.count.intValue, error)
+        }
+    }
+    
+    // MARK: Get Documents
+    
     public func getDocuments(_ source: FirewrapSource = .default, completion: @escaping ([[String : Any]]?) -> Void) {
         let db = Firestore.firestore()
         db.collection(path).getDocuments(source: source.firebaseValue) { snapshot, error in
@@ -109,7 +122,7 @@ public class FirewrapCollection {
                 let model = try document.data(as: T.self)
                 models.append(model)
             } catch {
-                break
+                continue
             }
         }
         return models
